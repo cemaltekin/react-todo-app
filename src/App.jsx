@@ -1,24 +1,30 @@
 import { useEffect } from "react";
 import { useState } from "react";
 import { MdEditSquare, MdDelete } from "react-icons/md";
-
+import classNames from "classnames";
 export default function App() {
   const [todos, setTodos] = useState([]);
   const [todo, setTodo] = useState({
     id: "",
     title: "",
+    confirmed: false,
   });
 
   const addTodo = (e) => {
     e.preventDefault();
-    setTodos([...todos, todo]);
-    setTodo({
-      id: "",
-      title: "",
-    });
+    if (todo.title.length >= 3) {
+      setTodos([...todos, todo]);
+      setTodo({
+        id: "",
+        title: "",
+      });
+    } else {
+      alert("3 karakterden az olamaz!");
+    }
   };
 
   const deleteTodo = (id) => {
+    e.stopPropagation();
     const updatedTodos = todos.filter((todo) => todo.id !== id);
     setTodos(updatedTodos);
   };
@@ -26,7 +32,22 @@ export default function App() {
   const updateTodo = (id) => {
     const updatedTodos = todos.map((todo) => {
       if (todo.id === id) {
-        todo.title = prompt("Yeni başlık giriniz", todo.title);
+        const newTitle = prompt("Yeni başlık giriniz", todo.title);
+        if (newTitle.length < 3) {
+          alert("3 karakterden az olamaz!");
+          return todo;
+        }
+        todo.title = newTitle;
+      }
+      return todo;
+    });
+    setTodos(updatedTodos);
+  };
+
+  const submitTodo = (id) => {
+    const updatedTodos = todos.map((todo) => {
+      if (todo.id === id) {
+        todo.confirmed = !todo.confirmed;
       }
       return todo;
     });
@@ -69,14 +90,20 @@ export default function App() {
           </form>
         </div>
         <div>
-          <ul>
+          <ul className="mt-5">
             {todos.map((todo) => (
               <li
                 key={todo.id}
-                className="flex items-center justify-between bg-zinc-600 rounded-lg px-5 py-3 mt-5"
+                className={classNames(
+                  "flex justify-between items-center  rounded-lg mb-3 cursor-pointer",
+                  {
+                    "bg-zinc-600": !todo.confirmed,
+                    "bg-green-500": todo.confirmed,
+                  }
+                )}
               >
-                <span className="text-white">{todo.title}</span>
-                <div className="flex items-center">
+                <span className="text-white px-5 py-3 w-full"  onClick={() => submitTodo(todo.id)}>{todo.title}</span>
+                <div className="flex items-center px-5 py-3">
                   <MdEditSquare
                     className="text-white text-2xl mr-3 cursor-pointer"
                     onClick={() => updateTodo(todo.id)}
